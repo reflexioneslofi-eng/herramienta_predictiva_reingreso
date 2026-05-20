@@ -81,8 +81,4 @@ if st.button("Predecir"):
         st.error(f"Riesgo de reingreso ({prob:.1%})")
     else:
         st.success(f"Bajo riesgo de reingreso ({prob:.1%})")
-    st.write(f"Probabilidad estimada: {prob:.2%}")
-    # =====================================================
-    # SEMÁFORO CLÍNICO
-    # =====================================================
 
