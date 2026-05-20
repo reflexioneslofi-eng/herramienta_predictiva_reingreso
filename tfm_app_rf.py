@@ -14,27 +14,32 @@ modelo = data["model"]
 st.title("Predictor de Reingreso")
 
 # =========================================================
-# INPUTS
+# INPUTS (ORDEN CLÍNICO)
 # =========================================================
-estancia = st.number_input(
-    "Estancia hospitalaria",
-    min_value=0.0,
-    max_value=60.0,
-    value=7.0
-)
 
-rdw = st.number_input(
-    "RDW",
-    min_value=10.0,
-    max_value=25.0,
-    value=14.0
-)
+# 1. Demográficos
+sexo = st.selectbox("Sexo", ["Mujer", "Hombre"])
+sexo = 1 if sexo == "Hombre" else 0
 
+# 2. Estado basal
+asa_options = ["Desconocido", 2, 3, 4]
+asa_display = st.selectbox("ASA", asa_options)
+asa = 11 if asa_display == "Desconocido" else asa_display
+
+# 3. Comorbilidad
 n_farmacos = st.number_input(
     "Número de fármacos",
     min_value=0,
     max_value=30,
     value=8
+)
+
+# 4. Analítica
+rdw = st.number_input(
+    "RDW preoperatorio",
+    min_value=10.0,
+    max_value=25.0,
+    value=14.0
 )
 
 hb = st.number_input(
@@ -44,25 +49,19 @@ hb = st.number_input(
     value=12.0
 )
 
-# --- Cambio aquí ---
-asa_options = ["Desconocido", 2, 3, 4]
-asa_display = st.selectbox(
-    "ASA",
-    asa_options
+# 5. Evolución
+estancia = st.number_input(
+    "Estancia hospitalaria (días)",
+    min_value=0.0,
+    max_value=60.0,
+    value=7.0
 )
-asa = 11 if asa_display == "Desconocido" else asa_display
-# --- Fin del cambio ---
-
-sexo = st.selectbox(
-    "Sexo",
-    ["Mujer", "Hombre"]
-)
-sexo = 1 if sexo == "Hombre" else 0
 
 # =========================================================
 # PREDICCIÓN
 # =========================================================
 if st.button("Predecir"):
+
     nuevo_paciente = pd.DataFrame({
         "estancia": [estancia],
         "pre_distribucion_eritrocitaria": [rdw],
@@ -76,9 +75,20 @@ if st.button("Predecir"):
     prob = modelo.predict_proba(nuevo_paciente)[0, 1]
 
     # =====================================================
-    # RESULTADO
+    # RESULTADO PRINCIPAL
     # =====================================================
-    if pred == 1:
-        st.error(f"Riesgo de reingreso ({prob:.1%})")
+    st.subheader("Resultado")
+
+    # Gauge simple
+    st.metric(label="Probabilidad de reingreso", value=f"{prob:.1%}")
+    st.progress(prob)
+
+    # =====================================================
+    # SEMÁFORO CLÍNICO
+    # =====================================================
+    if prob < 0.20:
+        st.success(f"🟢 Riesgo bajo ({prob:.1%})")
+    elif prob < 0.40:
+        st.warning(f"🟡 Riesgo moderado ({prob:.1%})")
     else:
-        st.success(f"Bajo riesgo de reingreso ({prob:.1%})")
+        st.error(f"🔴 Alto riesgo de reingreso ({prob:.1%})")
