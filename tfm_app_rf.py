@@ -75,20 +75,14 @@ if st.button("Predecir"):
     prob = modelo.predict_proba(nuevo_paciente)[0, 1]
 
     # =====================================================
-    # RESULTADO PRINCIPAL
+    # RESULTADO (CLÁSICO)
     # =====================================================
-    st.subheader("Resultado")
-
-    # Gauge simple
-    st.metric(label="Probabilidad de reingreso", value=f"{prob:.1%}")
-    st.progress(prob)
+    if pred == 1:
+        st.error(f"Riesgo de reingreso ({prob:.1%})")
+    else:
+        st.success(f"Bajo riesgo de reingreso ({prob:.1%})")
 
     # =====================================================
     # SEMÁFORO CLÍNICO
     # =====================================================
-    if prob < 0.20:
-        st.success(f"🟢 Riesgo bajo ({prob:.1%})")
-    elif prob < 0.40:
-        st.warning(f"🟡 Riesgo moderado ({prob:.1%})")
-    else:
-        st.error(f"🔴 Alto riesgo de reingreso ({prob:.1%})")
+st.write(f"Probabilidad estimada: {prob:.2%}")
